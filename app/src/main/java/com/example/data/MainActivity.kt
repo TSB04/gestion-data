@@ -15,9 +15,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
+    // Using viewModels() to get the UserViewModel
     private val userViewModel: UserViewModel by viewModels()
-    private lateinit var userAdapter: UserAdapter
 
+    private lateinit var userAdapter: UserAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var fabAddUser: FloatingActionButton
 
@@ -29,44 +30,58 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerView)
         fabAddUser = findViewById(R.id.fabAddUser)
 
-        // Set up RecyclerView
+        // Initialize the adapter
         userAdapter = UserAdapter(this)
+
+        // Set RecyclerView layout and adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = userAdapter
 
-        // Observe changes in the users list
+        // Observe the list of users and submit the list to the adapter
         userViewModel.allUsers.observe(this, Observer { users ->
             userAdapter.submitList(users)
         })
 
-        // Set up the FloatingActionButton click listener
+        // FloatingActionButton click listener to show the add user dialog
         fabAddUser.setOnClickListener {
             showAddUserDialog()
         }
     }
 
+    // Show the dialog to add a user
     private fun showAddUserDialog() {
-        // Inflate dialog layout
+        // Inflate the dialog layout
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
 
-        // Show the dialog
-        AlertDialog.Builder(this)
+        // Create and configure the AlertDialog
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Add User")
             .setView(dialogView)
-            .setPositiveButton("Add") { _, _ ->
-                // Get values from dialog input fields
+            .setPositiveButton("Add", null)  // Initial positive button setup, will handle click in setOnShowListener
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
+                // Get the user input from the dialog
                 val name = dialogView.findViewById<EditText>(R.id.editTextUserName).text.toString().trim()
                 val email = dialogView.findViewById<EditText>(R.id.editTextUserEmail).text.toString().trim()
 
-                // Check if both fields are filled
+                // Validate the input fields
                 if (name.isNotEmpty() && email.isNotEmpty()) {
+                    // Add the user if both fields are filled
                     userViewModel.addUser(name, email)
                     Toast.makeText(this, "User added", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()  // Close the dialog
                 } else {
+                    // Show a Toast message if any field is empty
                     Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+
+        // Show the dialog
+        dialog.show()
     }
 }

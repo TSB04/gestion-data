@@ -35,6 +35,8 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    viewBinding.isEnabled = true
 }
 
 dependencies {
@@ -49,25 +51,19 @@ dependencies {
 
     // Lifecycle components
     implementation(libs.androidx.lifecycle.livedata) // LiveData support
-    // If you're using ViewModel, uncomment the line below:
-    // implementation(libs.androidx.lifecycle.viewModel)
+    implementation(libs.androidx.lifecycle.viewmodel) // ViewModel support
 
     // Preferences
     implementation(libs.androidx.preference.ktx) // Preference library
 
     // Gson for parsing JSON
-    //implementation "com.google.code.gson:gson:2.8.8"
     implementation(libs.gson)
 
-    //consrtraint layout
+    // ConstraintLayout
     implementation(libs.androidx.constraintlayout)
 
     // RecyclerView
     implementation(libs.androidx.recyclerview)
-
-    // google android material
-    implementation(libs.material)
-
 
     // Testing
     testImplementation(libs.junit)
@@ -79,5 +75,7 @@ dependencies {
 kapt {
     arguments {
         arg("room.schemaLocation", "$projectDir/schemas")
+        arg("room.incremental", "true") // Optional for better build performance
     }
 }
+

@@ -1,83 +1,95 @@
 package com.example.data
 
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.data.databinding.ActivityUserDetailsBinding
 import com.example.data.models.User
 import com.example.data.view.UserViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class UserDetailsActivity : AppCompatActivity() {
-
-    private val userViewModel: UserViewModel by viewModels()
-    private lateinit var editTextUserName: EditText
-    private lateinit var editTextUserEmail: EditText
-    private lateinit var buttonUpdateUser: Button
-    private lateinit var buttonDeleteUser: Button
-
-    private var user: User? = null // Initialize as nullable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_details)
-
-        // Initialize views
-        editTextUserName = findViewById(R.id.editTextUserName)
-        editTextUserEmail = findViewById(R.id.editTextUserEmail)
-        buttonUpdateUser = findViewById(R.id.buttonUpdateUser)
-        buttonDeleteUser = findViewById(R.id.buttonDeleteUser)
-
-        // Get user data passed via Intent
-        val userId = intent.getStringExtra("userId") // userId should be non-nullable here
-
-        if (!userId.isNullOrEmpty()) {
-            // Observe the user only once
-            userViewModel.getUserById(userId).observe(this) { fetchedUser ->
-                if (fetchedUser != null) {
-                    user = fetchedUser
-                    displayUserDetails(fetchedUser)
-                } else {
-                    Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show()
-                    finish()  // Close if user doesn't exist
-                }
-            }
-        } else {
-            Toast.makeText(this, "Invalid user ID", Toast.LENGTH_SHORT).show()
-            finish()
-        }
-
-        // Handle Update Button Click
-        buttonUpdateUser.setOnClickListener {
-            val updatedName = editTextUserName.text.toString().trim()
-            val updatedEmail = editTextUserEmail.text.toString().trim()
-
-            if (updatedName.isNotEmpty() && updatedEmail.isNotEmpty() && user != null) {
-                user?.let {
-                    // Use copy function to create a new User object with updated values
-                    val updatedUser = it.copy(name = updatedName, email = updatedEmail)
-                    userViewModel.updateUser(updatedUser)
-                    Toast.makeText(this, "User updated successfully", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-            } else {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Handle Delete Button Click
-        buttonDeleteUser.setOnClickListener {
-            user?.let {
-                userViewModel.deleteUser(it)
-                Toast.makeText(this, "User deleted successfully", Toast.LENGTH_SHORT).show()
-                finish() // Close the activity
-            } ?: Toast.makeText(this, "Unable to delete user!", Toast.LENGTH_SHORT).show()
-        }
+        Toast.makeText(this, "Hello, you are in UserDetails view", Toast.LENGTH_SHORT).show()
     }
 
-    private fun displayUserDetails(user: User?) {
-        editTextUserName.setText(user?.name)
-        editTextUserEmail.setText(user?.email)
-    }
+//    private val userViewModel: UserViewModel by viewModels()
+//    private lateinit var binding: ActivityUserDetailsBinding
+//
+//    private var user: User? = null // Nullable user object to hold the user data
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        // Using ViewBinding to access views
+//        binding = ActivityUserDetailsBinding.inflate(layoutInflater)
+//        setContentView(binding.root)
+//
+//        // Get the user ID from the Intent
+//        val userId = intent.getStringExtra("userId") ?: run {
+//            showToast("Invalid user ID")
+//            finish()
+//            return
+//        }
+//
+//        // Fetch user details using the user ID
+//        userViewModel.getUserById(userId).observe(this) { fetchedUser ->
+//            if (fetchedUser != null) {
+//                user = fetchedUser
+//                displayUserDetails(fetchedUser)
+//            } else {
+//                showToast("User not found")
+//                finish()  // Close activity if user not found
+//            }
+//        }
+//
+//
+//        // Handle the update user button click
+//        binding.buttonUpdateUser.setOnClickListener {
+//            val updatedName = binding.editTextUserName.text.toString().trim()
+//            val updatedEmail = binding.editTextUserEmail.text.toString().trim()
+//
+//            if (updatedName.isNotEmpty() && updatedEmail.isNotEmpty() && user != null) {
+//                val updatedUser = user?.copy(name = updatedName, email = updatedEmail)
+//                updatedUser?.let {
+//                    lifecycleScope.launch {
+//                        withContext(Dispatchers.IO) {
+//                            userViewModel.updateUser(it)
+//                        }
+//                    }
+//                    showToast("User updated successfully")
+//                    finish() // Close activity after update
+//                }
+//            } else {
+//                showToast("Please fill in all fields")
+//            }
+//        }
+//
+//
+//        // Handle the delete user button click
+//        binding.buttonDeleteUser.setOnClickListener {
+//            user?.let {
+//                userViewModel.deleteUser(it)
+//                showToast("User deleted successfully")
+//                finish() // Close activity after delete
+//            } ?: showToast("Unable to delete user!")
+//        }
+//    }
+//
+//    // Function to display the user details in the EditText fields
+//    private fun displayUserDetails(user: User) {
+//        binding.editTextUserName.setText(user.name)
+//        binding.editTextUserEmail.setText(user.email)
+//    }
+//
+//    // Helper function to show toast messages
+//    private fun showToast(message: String) {
+//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+//    }
 }
