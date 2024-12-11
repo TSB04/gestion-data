@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt) // Enable KAPT for annotation processing
 }
 
 android {
@@ -26,21 +27,43 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
 }
 
 dependencies {
-
+    // Core libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+
+    // Room (Database)
+    implementation(libs.androidx.room.runtime) // Room runtime library
+    kapt(libs.androidx.room.compiler) // Annotation processor for Room
+
+    // Lifecycle components
+    implementation(libs.androidx.lifecycle.livedata) // Corrected LiveData support
+//    implementation(libs.androidx.lifecycle.viewModel) // ViewModel support
+
+    // Preferences
+    implementation(libs.androidx.preference.ktx) // Preference library
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+// Ensure Room schema export (optional but recommended for managing Room migrations)
+kapt {
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
 }
