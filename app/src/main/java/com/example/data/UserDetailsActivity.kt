@@ -1,6 +1,9 @@
 package com.example.data
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -14,82 +17,106 @@ import kotlinx.coroutines.withContext
 
 class UserDetailsActivity : AppCompatActivity() {
 
+    private val userViewModel: UserViewModel by viewModels()
+    private lateinit var binding: ActivityUserDetailsBinding
+    private var user: User? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_user_details)
-        Toast.makeText(this, "Hello, you are in UserDetails view", Toast.LENGTH_SHORT).show()
+        binding = ActivityUserDetailsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        Log.d(TAG, "onCreate: Initializing UserDetailsActivity")
+
+        val userId = intent.getIntExtra(EXTRA_USER_ID, -1)
+        if (userId == -1) {
+            Log.e(TAG, "Invalid user ID passed to UserDetailsActivity")
+            showToast("Invalid user ID")
+            finish()
+            return
+        }
+
+        fetchUserDetails(userId)
+
+        binding.buttonUpdateUser.setOnClickListener {
+            Log.d(TAG, "Update User button clicked")
+            updateUser()
+        }
+
+        binding.buttonDeleteUser.setOnClickListener {
+            Log.d(TAG, "Delete User button clicked")
+            deleteUser()
+        }
     }
 
-//    private val userViewModel: UserViewModel by viewModels()
-//    private lateinit var binding: ActivityUserDetailsBinding
-//
-//    private var user: User? = null // Nullable user object to hold the user data
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        // Using ViewBinding to access views
-//        binding = ActivityUserDetailsBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
-//
-//        // Get the user ID from the Intent
-//        val userId = intent.getStringExtra("userId") ?: run {
-//            showToast("Invalid user ID")
-//            finish()
-//            return
-//        }
-//
-//        // Fetch user details using the user ID
-//        userViewModel.getUserById(userId).observe(this) { fetchedUser ->
-//            if (fetchedUser != null) {
-//                user = fetchedUser
-//                displayUserDetails(fetchedUser)
-//            } else {
-//                showToast("User not found")
-//                finish()  // Close activity if user not found
-//            }
-//        }
-//
-//
-//        // Handle the update user button click
-//        binding.buttonUpdateUser.setOnClickListener {
-//            val updatedName = binding.editTextUserName.text.toString().trim()
-//            val updatedEmail = binding.editTextUserEmail.text.toString().trim()
-//
-//            if (updatedName.isNotEmpty() && updatedEmail.isNotEmpty() && user != null) {
-//                val updatedUser = user?.copy(name = updatedName, email = updatedEmail)
-//                updatedUser?.let {
-//                    lifecycleScope.launch {
-//                        withContext(Dispatchers.IO) {
-//                            userViewModel.updateUser(it)
-//                        }
-//                    }
-//                    showToast("User updated successfully")
-//                    finish() // Close activity after update
-//                }
-//            } else {
-//                showToast("Please fill in all fields")
-//            }
-//        }
-//
-//
-//        // Handle the delete user button click
-//        binding.buttonDeleteUser.setOnClickListener {
-//            user?.let {
-//                userViewModel.deleteUser(it)
-//                showToast("User deleted successfully")
-//                finish() // Close activity after delete
-//            } ?: showToast("Unable to delete user!")
-//        }
-//    }
-//
-//    // Function to display the user details in the EditText fields
-//    private fun displayUserDetails(user: User) {
-//        binding.editTextUserName.setText(user.name)
-//        binding.editTextUserEmail.setText(user.email)
-//    }
-//
-//    // Helper function to show toast messages
-//    private fun showToast(message: String) {
-//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-//    }
+    private fun fetchUserDetails(userId: Int) {
+        Log.d(TAG, "Fetching details for user ID: $userId")
+        userViewModel.getUserById(userId.toString()).observe(this) { fetchedUser ->
+            if (fetchedUser != null) {
+                user = fetchedUser
+                Log.d(TAG, "User fetched: $fetchedUser")
+                displayUserDetails(fetchedUser)
+            } else {
+                Log.e(TAG, "User not found for ID: $userId")
+                showToast("User not found")
+                finish()
+            }
+        }
+    }
+
+    private fun displayUserDetails(user: User) {
+        Log.d(TAG, "Displaying user details: $user")
+        binding.editTextUserName.setText(user.name)
+        binding.editTextUserEmail.setText(user.email)
+    }
+
+    private fun updateUser() {
+        val updatedName = binding.editTextUserName.text.toString().trim()
+        val updatedEmail = binding.editTextUserEmail.text.toString().trim()
+
+        if (updatedName.isNotEmpty() && updatedEmail.isNotEmpty() && user != null) {
+            val updatedUser = user!!.copy(name = updatedName, email = updatedEmail)
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    userViewModel.updateUser(updatedUser)
+                }
+                Log.d(TAG, "User updated: $updatedUser")
+                showToast("User updated successfully")
+                finish()
+            }
+        } else {
+            Log.w(TAG, "Update User failed: Fields are empty or user is null")
+            showToast("Please fill in all fields")
+        }
+    }
+
+    private fun deleteUser() {
+        user?.let {
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    userViewModel.deleteUser(it)
+                }
+                Log.d(TAG, "User deleted: $it")
+                showToast("User deleted successfully")
+                finish()
+            }
+        } ?: Log.e(TAG, "Delete User failed: User object is null")
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        private const val TAG = "UserDetailsActivity"
+        private const val EXTRA_USER_ID = "userId"
+
+        fun start(context: Context, userId: Int) {
+            val intent = Intent(context, UserDetailsActivity::class.java).apply {
+                putExtra(EXTRA_USER_ID, userId)
+            }
+            Log.d(TAG, "Starting UserDetailsActivity with userId = $userId")
+            context.startActivity(intent)
+        }
+    }
 }

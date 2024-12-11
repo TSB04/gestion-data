@@ -1,87 +1,91 @@
 package com.example.data
 
 import android.os.Bundle
-import android.widget.EditText
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.example.data.databinding.ActivityMainBinding
+import com.example.data.databinding.DialogAddUserBinding
 import com.example.data.ui.UserAdapter
 import com.example.data.view.UserViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
-    // Using viewModels() to get the UserViewModel
     private val userViewModel: UserViewModel by viewModels()
-
-    private lateinit var userAdapter: UserAdapter
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var fabAddUser: FloatingActionButton
+    private lateinit var binding: ActivityMainBinding
+    private val userAdapter by lazy { UserAdapter(this::onUserClicked) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // Initialize views after setContentView
-        recyclerView = findViewById(R.id.recyclerView)
-        fabAddUser = findViewById(R.id.fabAddUser)
+        Log.d(TAG, "onCreate: Initializing MainActivity")
 
-        // Initialize the adapter
-        userAdapter = UserAdapter(this)
+        setupRecyclerView()
+        observeUsers()
 
-        // Set RecyclerView layout and adapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = userAdapter
-
-        // Observe the list of users and submit the list to the adapter
-        userViewModel.allUsers.observe(this, Observer { users ->
-            userAdapter.submitList(users)
-        })
-
-        // FloatingActionButton click listener to show the add user dialog
-        fabAddUser.setOnClickListener {
+        binding.fabAddUser.setOnClickListener {
+            Log.d(TAG, "FloatingActionButton clicked to add a user")
             showAddUserDialog()
         }
     }
 
-    // Show the dialog to add a user
-    private fun showAddUserDialog() {
-        // Inflate the dialog layout
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
+    private fun setupRecyclerView() {
+        Log.d(TAG, "Setting up RecyclerView")
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = userAdapter
+        }
+    }
 
-        // Create and configure the AlertDialog
+    private fun observeUsers() {
+        userViewModel.allUsers.observe(this) { users ->
+            Log.d(TAG, "Observed changes in user list: ${users.size} users")
+            userAdapter.submitList(users)
+        }
+    }
+
+    private fun showAddUserDialog() {
+        Log.d(TAG, "Displaying Add User Dialog")
+        val dialogBinding = DialogAddUserBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(this)
             .setTitle("Add User")
-            .setView(dialogView)
-            .setPositiveButton("Add", null)  // Initial positive button setup, will handle click in setOnShowListener
+            .setView(dialogBinding.root)
+            .setPositiveButton("Add", null)
             .setNegativeButton("Cancel", null)
             .create()
 
         dialog.setOnShowListener {
-            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            button.setOnClickListener {
-                // Get the user input from the dialog
-                val name = dialogView.findViewById<EditText>(R.id.editTextUserName).text.toString().trim()
-                val email = dialogView.findViewById<EditText>(R.id.editTextUserEmail).text.toString().trim()
+            val addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            addButton.setOnClickListener {
+                val name = dialogBinding.editTextUserName.text.toString().trim()
+                val email = dialogBinding.editTextUserEmail.text.toString().trim()
 
-                // Validate the input fields
                 if (name.isNotEmpty() && email.isNotEmpty()) {
-                    // Add the user if both fields are filled
+                    Log.d(TAG, "Adding user: Name = $name, Email = $email")
                     userViewModel.addUser(name, email)
-                    Toast.makeText(this, "User added", Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()  // Close the dialog
+                    Toast.makeText(this, "User added successfully", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
                 } else {
-                    // Show a Toast message if any field is empty
+                    Log.w(TAG, "Add User fields cannot be empty")
                     Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
-        // Show the dialog
         dialog.show()
+    }
+
+    private fun onUserClicked(userId: Int) {
+        Log.d(TAG, "User clicked: ID = $userId")
+        UserDetailsActivity.start(this, userId)
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 }
