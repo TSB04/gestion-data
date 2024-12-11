@@ -14,7 +14,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -49,11 +48,20 @@ dependencies {
     kapt(libs.androidx.room.compiler) // Annotation processor for Room
 
     // Lifecycle components
-    implementation(libs.androidx.lifecycle.livedata) // Corrected LiveData support
-//    implementation(libs.androidx.lifecycle.viewModel) // ViewModel support
+    implementation(libs.androidx.lifecycle.livedata) // LiveData support
+    // If you're using ViewModel, uncomment the line below:
+    // implementation(libs.androidx.lifecycle.viewModel)
 
     // Preferences
     implementation(libs.androidx.preference.ktx) // Preference library
+
+    // Gson for parsing JSON
+    //implementation "com.google.code.gson:gson:2.8.8"
+    implementation(libs.gson)
+
+    //consrtraint layout
+    implementation(libs.androidx.constraintlayout)
+
 
     // Testing
     testImplementation(libs.junit)

@@ -1,7 +1,7 @@
 package com.example.data.repository
 
 import androidx.lifecycle.LiveData
-import com.example.data.dao.UserDao
+import com.example.data.database.UserDao
 import com.example.data.models.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,11 +18,9 @@ class UserRepository(private val userDao: UserDao) {
         }
     }
 
-    // Get a user by ID (runs on a background thread)
-    suspend fun getUserById(id: String): User? {
-        return withContext(Dispatchers.IO) {
-            userDao.getUserById(id)
-        }
+    // Get a user by ID (LiveData returns asynchronously, no need to block)
+    fun getUserById(id: String): LiveData<User?> {
+        return userDao.getUserById(id)
     }
 
     // Update a user (runs on a background thread)

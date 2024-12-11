@@ -22,6 +22,11 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Get a user by ID (returns LiveData)
+    fun getUserById(id: String): LiveData<User?> {
+        return userRepository.getUserById(id)
+    }
+
     // Update an existing user (runs in background thread)
     fun updateUser(user: User) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -36,3 +41,5 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 }
+
+
