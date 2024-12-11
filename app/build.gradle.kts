@@ -62,6 +62,12 @@ dependencies {
     //consrtraint layout
     implementation(libs.androidx.constraintlayout)
 
+    // RecyclerView
+    implementation(libs.androidx.recyclerview)
+
+    // google android material
+    implementation(libs.material)
+
 
     // Testing
     testImplementation(libs.junit)

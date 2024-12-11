@@ -6,21 +6,21 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.data.models.User
 
-@Database(entities = [User::class], version = 1, exportSchema = false)
-abstract class UserDb : RoomDatabase() {
+@Database(entities = [User::class], version = 1)
+abstract class Db : RoomDatabase() {
     abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
-        private var INSTANCE: UserDb? = null
+        private var INSTANCE: Db? = null
 
-        fun getDatabase(context: Context): UserDb {
+        fun getDatabase(context: Context): Db {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    UserDb::class.java,
+                    Db::class.java,
                     "user_database"
-                ).fallbackToDestructiveMigration()  // Ensure a fallback migration in case of schema changes
+                ).fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
@@ -28,3 +28,9 @@ abstract class UserDb : RoomDatabase() {
         }
     }
 }
+
+//@Database(entities = [User::class], version = 1)
+//abstract class AppDatabase : RoomDatabase() {
+//    abstract fun userDao(): UserDao
+//}
+

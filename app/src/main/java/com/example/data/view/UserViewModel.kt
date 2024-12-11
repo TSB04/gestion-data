@@ -4,42 +4,53 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import com.example.data.database.UserDb
+import com.example.data.database.Db
 import com.example.data.models.User
 import com.example.data.repository.UserRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class UserViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val userRepository: UserRepository = UserRepository(UserDb.getDatabase(application).userDao())
+    private val userRepository: UserRepository = UserRepository(Db.getDatabase(application).userDao())
     val allUsers: LiveData<List<User>> = userRepository.allUsers
 
-    // Add a new user (runs in background thread)
     fun addUser(name: String, email: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             userRepository.addUser(name, email)
         }
     }
 
-    // Get a user by ID (returns LiveData)
     fun getUserById(id: String): LiveData<User?> {
         return userRepository.getUserById(id)
     }
 
-    // Update an existing user (runs in background thread)
     fun updateUser(user: User) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             userRepository.updateUser(user)
         }
     }
 
-    // Delete a user (runs in background thread)
     fun deleteUser(user: User) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             userRepository.deleteUser(user)
         }
     }
 }
-
+//class UserViewModel(application: Application) : AndroidViewModel(application) {
+//
+//    private val userDao: UserDao = AppDatabase.getDatabase(application).userDao()
+//    val allUsers: LiveData<List<User>> = userDao.getAllUsers()
+//
+//    fun addUser(name: String, email: String) {
+//        viewModelScope.launch {
+//            userDao.insert(User(name = name, email = email))
+//        }
+//    }
+//
+//    fun deleteUser(user: User) {
+//        viewModelScope.launch {
+//            userDao.delete(user)
+//        }
+//    }
+//}
 

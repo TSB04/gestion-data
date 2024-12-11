@@ -16,62 +16,57 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class MainActivity : AppCompatActivity() {
 
     private val userViewModel: UserViewModel by viewModels()
-    private lateinit var recyclerView: RecyclerView
     private lateinit var userAdapter: UserAdapter
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var fabAddUser: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize RecyclerView
+        // Initialize views after setContentView
         recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        fabAddUser = findViewById(R.id.fabAddUser)
 
-        // Initialize adapter and attach to RecyclerView
-        userAdapter = UserAdapter(emptyList())
+        // Set up RecyclerView
+        userAdapter = UserAdapter(this)
+        recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = userAdapter
 
-        // Observe user list and update RecyclerView when data changes
+        // Observe changes in the users list
         userViewModel.allUsers.observe(this, Observer { users ->
-            users?.let {
-                userAdapter.updateData(it)
-            }
+            userAdapter.submitList(users)
         })
 
-        // Initialize the FloatingActionButton and set click listener
-        val fabAddUser: FloatingActionButton = findViewById(R.id.fabAddUser)
+        // Set up the FloatingActionButton click listener
         fabAddUser.setOnClickListener {
             showAddUserDialog()
         }
     }
 
-    // Show dialog to add a new user
     private fun showAddUserDialog() {
+        // Inflate dialog layout
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
-        val nameEditText = dialogView.findViewById<EditText>(R.id.editTextUserName)
-        val emailEditText = dialogView.findViewById<EditText>(R.id.editTextUserEmail)
 
+        // Show the dialog
         AlertDialog.Builder(this)
             .setTitle("Add User")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
-                val name = nameEditText.text.toString().trim()
-                val email = emailEditText.text.toString().trim()
+                // Get values from dialog input fields
+                val name = dialogView.findViewById<EditText>(R.id.editTextUserName).text.toString().trim()
+                val email = dialogView.findViewById<EditText>(R.id.editTextUserEmail).text.toString().trim()
 
+                // Check if both fields are filled
                 if (name.isNotEmpty() && email.isNotEmpty()) {
-                    addNewUser(name, email)
+                    userViewModel.addUser(name, email)
+                    Toast.makeText(this, "User added", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Please enter both name and email", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)
-            .create()
             .show()
-    }
-
-    // Add a new user to the database
-    private fun addNewUser(name: String, email: String) {
-        userViewModel.addUser(name, email)
-        Toast.makeText(this, "User added successfully", Toast.LENGTH_SHORT).show()
     }
 }

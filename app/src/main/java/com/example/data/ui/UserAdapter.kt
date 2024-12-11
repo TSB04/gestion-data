@@ -1,46 +1,46 @@
 package com.example.data.ui
 
+import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.data.R
+import com.example.data.UserDetailsActivity
 import com.example.data.models.User
 
-class UserAdapter(private var userList: List<User>) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
+class UserAdapter(private val context: Context) :
+    ListAdapter<User, UserAdapter.UserViewHolder>(UserDiffCallback()) {
 
-    // Inflate the item layout and create a ViewHolder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_user, parent, false)
         return UserViewHolder(view)
     }
 
-    // Bind the data (user) to the views in the RecyclerView item
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-        val user = userList[position]
+        val user = getItem(position)
         holder.bind(user)
+
+        holder.itemView.setOnClickListener {
+            val intent = Intent(context, UserDetailsActivity::class.java)
+            intent.putExtra("userId", user.id)
+            context.startActivity(intent)
+        }
     }
 
-    // Return the size of the user list
-    override fun getItemCount(): Int {
-        return userList.size
-    }
-
-    // Method to update the data in the adapter
-    fun updateData(newUsers: List<User>) {
-        userList = newUsers
-        notifyDataSetChanged()  // Notify the adapter that the data has changed
-    }
-
-    // ViewHolder class to hold references to the views in each item
-   class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val userName = itemView.findViewById<TextView>(R.id.userName)
-    private val userEmail = itemView.findViewById<TextView>(R.id.userEmail)
-
-    fun bind(user: User) {
-        userName.text = user.name
-        userEmail.text = user.email
+    class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        fun bind(user: User) {
+            itemView.findViewById<TextView>(R.id.userName).text = user.name
+            itemView.findViewById<TextView>(R.id.userEmail).text = user.email
+        }
     }
 }
+
+class UserDiffCallback : DiffUtil.ItemCallback<User>() {
+    override fun areItemsTheSame(oldItem: User, newItem: User): Boolean = oldItem.id == newItem.id
+    override fun areContentsTheSame(oldItem: User, newItem: User): Boolean = oldItem == newItem
 }

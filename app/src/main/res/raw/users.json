@@ -1,16 +1,1 @@
-{
-  "users": [
-    {
-      "name": "John Doe",
-      "email": "john.doe@example.com"
-    },
-    {
-      "name": "Thierry Henry",
-      "email": "thierry@gmail.com"
-    },
-    {
-      "name": "Alice Smith",
-      "email": "alice.smith@example.com"
-    }
-  ]
-}
+
